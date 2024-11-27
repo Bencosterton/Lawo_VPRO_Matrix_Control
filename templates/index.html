@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPRO Matrix Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .matrix-container {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            padding: 20px;
+            gap: 10px;
+            background-color: var(--panel-bg);
+        }
+
+        .source-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-right: 20px;
+        }
+
+        .grid-area {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .target-labels {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+
+        .target-label {
+            width: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .source-label {
+            height: 40px;
+            line-height: 40px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            padding-right: 10px;
+        }
+
+        .matrix-grid {
+            display: grid;
+            gap: 2px;
+        }
+
+        .matrix-row {
+            display: flex;
+            gap: 2px;
+        }
+
+        .matrix-cell {
+            width: 40px;
+            height: 40px;
+            background-color: var(--button-bg);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .matrix-cell.connected {
+            background-color: var(--accent-cyan);
+        }
+
+        .matrix-cell:hover {
+            background-color: var(--accent-cyan);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <div class="router-selector">
+                {% for vpro_name in vpros %}
+                <button class="router-btn" data-vpro="{{ vpro_name }}">{{ vpro_name }}</button>
+                {% endfor %}
+            </div>
+            <div class="status-indicators">
+                <div class="status-item">
+                    <div class="status-dot" id="connection-status"></div>
+                    <span>Connection Status</span>
+                </div>
+                <div class="timestamp" id="last-update"></div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>Matrix View</h2>
+                </div>
+                <div class="matrix-container">
+                    <div class="source-labels" id="source-labels"></div>
+                    <div class="grid-area">
+                        <div class="target-labels" id="target-labels"></div>
+                        <div class="matrix-grid" id="matrix-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MatrixController {
+            constructor() {
+                this.currentVpro = null;
+                this.matrixState = null;
+                this.setupEventListeners();
+                this.selectFirstVpro();
+                this.updateInterval = setInterval(() => this.updateMatrixView(), 5000);
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.router-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.selectVpro(btn.dataset.vpro));
+                });
+            }
+
+            selectFirstVpro() {
+                const firstBtn = document.querySelector('.router-btn');
+                if (firstBtn) {
+                    this.selectVpro(firstBtn.dataset.vpro);
+                }
+            }
+
+            async selectVpro(vproName) {
+                this.currentVpro = vproName;
+                document.querySelectorAll('.router-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.vpro === vproName);
+                });
+                await this.updateMatrixView();
+            }
+
+            async updateMatrixView() {
+                if (!this.currentVpro) return;
+
+                try {
+                    const response = await fetch(`/api/matrix/${this.currentVpro}`);
+                    if (!response.ok) throw new Error('Failed to fetch matrix state');
+                    
+                    this.matrixState = await response.json();
+                    this.renderMatrix();
+                    document.getElementById('connection-status').classList.add('active');
+                    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                } catch (error) {
+                    console.error('Error updating matrix:', error);
+                    document.getElementById('connection-status').classList.remove('active');
+                }
+            }
+
+            renderMatrix() {
+                if (!this.matrixState) return;
+
+                const sourceLabels = document.getElementById('source-labels');
+                const targetLabels = document.getElementById('target-labels');
+                const grid = document.getElementById('matrix-grid');
+                sourceLabels.innerHTML = '';
+                targetLabels.innerHTML = '';
+                grid.innerHTML = '';
+
+                // Get dimensions
+                const numTargets = Object.keys(this.matrixState).length;
+                const numSources = Math.max(...Object.values(this.matrixState)
+                    .flatMap(conn => conn.sources.map(s => s.index))) + 1;
+
+                // Create target labels (top row)
+                for (let i = 0; i < numTargets; i++) {
+                    const label = document.createElement('div');
+                    label.className = 'target-label';
+                    label.textContent = `Out ${i + 1}`;
+                    targetLabels.appendChild(label);
+                }
+
+                // Create rows with source labels and cells
+                for (let sourceIdx = 0; sourceIdx < numSources; sourceIdx++) {
+                    // Add source label
+                    const sourceLabel = document.createElement('div');
+                    sourceLabel.className = 'source-label';
+                    sourceLabel.textContent = `In ${sourceIdx + 1}`;
+                    sourceLabels.appendChild(sourceLabel);
+
+                    // Create row of cells
+                    const row = document.createElement('div');
+                    row.className = 'matrix-row';
+
+                    for (let targetIdx = 0; targetIdx < numTargets; targetIdx++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'matrix-cell';
+                        
+                        const connection = this.matrixState[targetIdx];
+                        const isConnected = connection?.sources.some(s => s.index === sourceIdx);
+                        
+                        if (isConnected) {
+                            cell.classList.add('connected');
+                        }
+
+                        cell.addEventListener('click', () => this.makeConnection(sourceIdx, targetIdx));
+                        row.appendChild(cell);
+                    }
+                    grid.appendChild(row);
+                }
+            }
+
+            async makeConnection(source, target) {
+                try {
+                    const response = await fetch('/api/connect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            vpro: this.currentVpro,
+                            source,
+                            target
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        await this.updateMatrixView();
+                    }
+                } catch (error) {
+                    console.error('Error making connection:', error);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.matrixController = new MatrixController();
+        });
+    </script>
+</body>
+</html>
