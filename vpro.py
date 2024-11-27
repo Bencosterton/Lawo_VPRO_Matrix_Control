@@ -6,10 +6,8 @@ from pathlib import Path
 
 app = Flask(__name__)
 
-# Get the directory containing the Flask app
 BASE_DIR = Path(__file__).resolve().parent
 
-# Define paths for Node scripts
 NODE_SCRIPTS_DIR = BASE_DIR / 'node_scripts'
 DISCOVER_SCRIPT = NODE_SCRIPTS_DIR / 'VPro_discover.js'
 CONNECT_SCRIPT = NODE_SCRIPTS_DIR / 'VPro_connect.js'
@@ -23,10 +21,10 @@ def run_node_script(script_path, args):
     """Run a Node.js script with given arguments and return the output"""
     try:
         cmd = ['node', str(script_path)] + args
-        print(f"Running command: {' '.join(cmd)}")  # Debug print
+        print(f"Running command: {' '.join(cmd)}") 
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.stderr:
-            print(f"Script error output: {result.stderr}")  # Debug print
+            print(f"Script error output: {result.stderr}")  
         return json.loads(result.stdout) if result.stdout else None
     except Exception as e:
         print(f"Error running script: {e}")
@@ -75,10 +73,8 @@ def connect():
     return jsonify({'success': True if result else False})
 
 if __name__ == '__main__':
-    # Ensure required directories exist
     os.makedirs(NODE_SCRIPTS_DIR, exist_ok=True)
     
-    # Check if Node.js scripts exist
     if not DISCOVER_SCRIPT.exists():
         print(f"Warning: Discovery script not found at {DISCOVER_SCRIPT}")
     if not CONNECT_SCRIPT.exists():
