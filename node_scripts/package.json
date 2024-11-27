@@ -1,0 +1,16 @@
+{
+  "name": "node_scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "VPro_connect.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-emberplus": "^3.0.8",
+    "yargs": "^17.7.2"
+  }
+}
