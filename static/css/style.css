@@ -86,7 +86,7 @@ body {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     gap: 20px;
-    min-height: 0; /* This is important for nested flex/grid scrolling */
+    min-height: 0; 
 }
 
 /* Panels */
@@ -565,7 +565,7 @@ Router selector buttons
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding-top: 50px; /* Make room for target labels */
+    padding-top: 50px; 
 }
 
 .matrix-content {
