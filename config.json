@@ -1,10 +1,10 @@
 {
     "VPro": {
-        "VPro 1": "10.10.126.22",
-        "VPro 2": "10.10.126.23",
-        "VPro 3": "10.10.126.24",
-        "VPro 4": "10.10.126.25",
-        "VPro 5": "10.10.126.26",
-        "VPro 6": "10.10.126.27"
+        "VPro 1": "PUT-YOUR-VPRO-IP-ADDRESS-HERE",
+        "VPro 2": "PUT-YOUR-VPRO-IP-ADDRESS-HERE",
+        "VPro 3": "PUT-YOUR-VPRO-IP-ADDRESS-HERE",
+        "VPro 4": "PUT-YOUR-VPRO-IP-ADDRESS-HERE",
+        "VPro 5": "PUT-YOUR-VPRO-IP-ADDRESS-HERE",
+        "VPro 6": "PUT-YOUR-VPRO-IP-ADDRESS-HERE"
     }
 }
