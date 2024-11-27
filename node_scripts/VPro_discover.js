@@ -26,17 +26,16 @@ async function getLabelsForPath(client, basePath, count) {
                 labels[i] = labelNode._contents.identifier;
             }
         } catch (e) {
-            // Skip if label not found
         }
     }
     return labels;
 }
 
 async function getAllLabels(client, matrix) {
-    // Get target labels (using targetCount from matrix)
+    // Get target labels 
     const targetLabels = await getLabelsForPath(client, '1.10.1.1', matrix._contents.targetCount);
 
-    // Get source labels (using sourceCount from matrix)
+    // Get source labels
     const sourceLabels = await getLabelsForPath(client, '1.10.1.2', matrix._contents.sourceCount);
 
     return { targetLabels, sourceLabels };
@@ -52,13 +51,13 @@ async function runClient() {
         // Get the matrix node
         let matrix = await client.getElementByPathAsync("pro8/Video-Matrix/Matrix");
 
-        // Get all labels
+        // Get lables
         const { targetLabels, sourceLabels } = await getAllLabels(client, matrix);
 
-        // Wait for connections to be populated
+        // This can take a second
         await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Format and output connections with labels
+        // Format the resposne from VPRO
         if (matrix.connections) {
             const formattedConnections = {};
             for (const [target, connection] of Object.entries(matrix.connections)) {
