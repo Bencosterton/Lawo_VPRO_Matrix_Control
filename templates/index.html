@@ -167,12 +167,10 @@
                 targetLabels.innerHTML = '';
                 grid.innerHTML = '';
 
-                // Get dimensions
                 const numTargets = Object.keys(this.matrixState).length;
                 const numSources = Math.max(...Object.values(this.matrixState)
                     .flatMap(conn => conn.sources.map(s => s.index))) + 1;
 
-                // Create target labels (top row)
                 for (let i = 0; i < numTargets; i++) {
                     const label = document.createElement('div');
                     label.className = 'target-label';
@@ -180,15 +178,12 @@
                     targetLabels.appendChild(label);
                 }
 
-                // Create rows with source labels and cells
                 for (let sourceIdx = 0; sourceIdx < numSources; sourceIdx++) {
-                    // Add source label
                     const sourceLabel = document.createElement('div');
                     sourceLabel.className = 'source-label';
                     sourceLabel.textContent = `In ${sourceIdx + 1}`;
                     sourceLabels.appendChild(sourceLabel);
 
-                    // Create row of cells
                     const row = document.createElement('div');
                     row.className = 'matrix-row';
 
