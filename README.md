@@ -105,12 +105,11 @@ async function runClient() {
 }
 ```
 
+VPro matric connections (VPro_connect.js)
 
 ```bash
 node VPro_connect.js -h <VPRO-IP> -p 9000 -s <source-number> -t <destination-number>
 ```
-
-VPro matric connections (VPro_connect.js)
 
 ```javascript
 const { EmberClient, EmberClientEvent, LoggingService } = require('node-emberplus');
